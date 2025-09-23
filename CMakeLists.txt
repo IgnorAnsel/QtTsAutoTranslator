@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(PROJECT_SOURCES
         src/main.cpp
@@ -40,11 +40,14 @@ else()
                 include/tsfilehandler.h src/tsfilehandler.cpp
                 include/tstreewidget.h src/tstreewidget.cpp
                 include/tsdetailwidget.h src/tsdetailwidget.cpp
+                include/translationservice.h src/translationservice.cpp
+                include/translationsettingsdialog.h src/translationsettingsdialog.cpp
+                include/logoutputwidget.h src/logoutputwidget.cpp
         )
     endif()
 endif()
 
-target_link_libraries(QtTsAutoTranslator PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(QtTsAutoTranslator PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

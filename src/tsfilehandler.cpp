@@ -1,4 +1,6 @@
 #include "tsfilehandler.h"
+
+#include <iostream>
 TsFileHandler::TsFileHandler(QObject *parent) : QObject(parent) {}
 
 bool TsFileHandler::load(const QString &filePath) {
@@ -104,10 +106,20 @@ QList<int> TsFileHandler::findEntries(const QString &searchText, bool searchSour
 
 QList<int> TsFileHandler::getUntranslatedEntries() {
     QList<int> results;
-
     for (int i = 0; i < m_entries.size(); ++i) {
         if (m_entries.at(i).state == TranslationState::Unfinished ||
             m_entries.at(i).translation.isEmpty()) {
+            results.append(i);
+        }
+    }
+    return results;
+}
+
+QList<int> TsFileHandler::findEntriesBySource(const QString &source) {
+    QList<int> results;
+
+    for (int i = 0; i < m_entries.size(); ++i) {
+        if (m_entries[i].source == source) {
             results.append(i);
         }
     }

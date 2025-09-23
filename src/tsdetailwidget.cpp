@@ -2,6 +2,9 @@
 
 #include <QApplication>
 #include <QClipboard>
+#include <QMessageBox>
+
+#include "../include/translationservice.h"
 
 TsDetailWidget::TsDetailWidget(QWidget *parent)
     : QWidget(parent), m_currentContext(""), m_currentSource("") {
@@ -49,6 +52,10 @@ void TsDetailWidget::setupUi() {
     messageLayout->addRow("位置:", m_locationsEdit);
     messageLayout->addRow("注释:", m_commentsEdit);
 
+    m_autoTranslateButton = new QPushButton("自动翻译", this);
+    m_autoTranslateButton->setIcon(QIcon(":/icons/translate.svg"));
+    m_autoTranslateButton->setToolTip("使用Google Translate自动翻译");
+
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     m_saveButton = new QPushButton("保存修改", this);
     m_saveButton->setEnabled(false);
@@ -57,12 +64,13 @@ void TsDetailWidget::setupUi() {
     buttonLayout->addWidget(m_copySourceButton);
     buttonLayout->addStretch();
     buttonLayout->addWidget(m_saveButton);
+    buttonLayout->insertWidget(0, m_autoTranslateButton);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(m_contextGroup);
     mainLayout->addWidget(m_messageGroup);
     mainLayout->addLayout(buttonLayout);
-
+    m_translationService = new TranslationService(this);
     setLayout(mainLayout);
 
     connect(m_translationEdit, &QTextEdit::textChanged, [this]{
@@ -87,6 +95,13 @@ void TsDetailWidget::setupUi() {
     connect(m_copySourceButton, &QPushButton::clicked, [this]{
         QApplication::clipboard()->setText(m_sourceLabel->text());
     });
+
+    connect(m_autoTranslateButton, &QPushButton::clicked,
+            this, &TsDetailWidget::onAutoTranslateClicked);
+    connect(m_translationService, &TranslationService::translationCompleted,
+            this, &TsDetailWidget::onTranslationCompleted);
+    connect(m_translationService, &TranslationService::errorOccurred,
+            this, &TsDetailWidget::onTranslationError);
 }
 
 void TsDetailWidget::showContextInfo(const QString &contextName, int messageCount) {
@@ -153,4 +168,34 @@ QString TsDetailWidget::currentTranslation() const {
 
 QString TsDetailWidget::currentState() const {
     return m_stateCombo->currentData().toString();
+}
+
+void TsDetailWidget::onAutoTranslateClicked() {
+    if (m_currentSource.isEmpty()) {
+        QMessageBox::warning(this, "警告", "没有可翻译的源文本");
+        return;
+    }
+
+    // 获取当前引擎名称
+    QString engineName = TranslationService::engineName(m_translationService->currentEngine());
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    m_autoTranslateButton->setEnabled(false);
+    m_autoTranslateButton->setText(QString("正在使用%1翻译...").arg(engineName));
+    m_translationService->translateText(m_sourceLabel->text());
+}
+
+void TsDetailWidget::onTranslationCompleted(const QString &original, const QString &translated) {
+    QApplication::restoreOverrideCursor();
+    m_autoTranslateButton->setEnabled(true);
+    m_autoTranslateButton->setText("自动翻译");
+
+    m_translationEdit->setPlainText(translated);
+    m_saveButton->setEnabled(true);
+}
+
+void TsDetailWidget::onTranslationError(const QString &errorMessage) {
+    QApplication::restoreOverrideCursor();
+    m_autoTranslateButton->setEnabled(true);
+    m_autoTranslateButton->setText("自动翻译");
+    QMessageBox::critical(this, "翻译错误", errorMessage);
 }

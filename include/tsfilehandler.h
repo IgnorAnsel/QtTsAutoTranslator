@@ -46,6 +46,9 @@ public:
 
     QList<int> findEntries(const QString &searchText, bool searchSource = true, bool searchTranslation = true);
     QList<int> getUntranslatedEntries();
+
+    QList<int> findEntriesBySource(const QString &source);
+
     QList<int> getNeedsReviewEntries();
 
     int getContextMessageCount(const QString &contextName) const;

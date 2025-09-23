@@ -10,6 +10,8 @@
 #include <QGroupBox>
 #include <QFileInfo>
 
+class TranslationService;
+
 class TsDetailWidget : public QWidget {
     Q_OBJECT
 public:
@@ -29,7 +31,11 @@ signals:
     void stateChanged(const QString &context, const QString &source,
                       const QString &newState);
     void saveRequested();
-
+public slots:
+    void onAutoTranslateClicked();
+private slots:
+    void onTranslationCompleted(const QString &original, const QString &translated);
+    void onTranslationError(const QString &errorMessage);
 private:
     void setupUi();
 
@@ -52,5 +58,8 @@ private:
 
     QString m_currentContext;
     QString m_currentSource;
+
+    QPushButton *m_autoTranslateButton;
+    TranslationService *m_translationService;
 };
 #endif

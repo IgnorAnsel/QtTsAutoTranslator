@@ -53,11 +53,8 @@ bool TsTreeWidget::loadTsFile(const QString &filePath) {
 void TsTreeWidget::parseContext(QXmlStreamReader &reader) {
     QString contextName;
 
-    // 创建上下文节点
     QTreeWidgetItem *contextItem = new QTreeWidgetItem(this);
     contextItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-
-    // 用于统计该上下文的翻译进度
     int totalMessages = 0;
     int finishedMessages = 0;
 
@@ -71,9 +68,7 @@ void TsTreeWidget::parseContext(QXmlStreamReader &reader) {
                 contextItem->setData(0, Qt::UserRole, contextName);
             } else if (reader.name() == "message") {
                 totalMessages++;
-                // 解析消息并获取其状态
                 TranslationState state = parseMessage(reader, contextItem);
-
                 // 如果状态是已完成，增加计数
                 if (state == TranslationState::Finished) {
                     finishedMessages++;
@@ -85,7 +80,7 @@ void TsTreeWidget::parseContext(QXmlStreamReader &reader) {
     }
 
     contextItem->setText(2, QString("%1/%2").arg(finishedMessages).arg(totalMessages));
-    qDebug() << "Context:" << contextName << "Finished:" << finishedMessages << "Total:" << totalMessages;
+    // qDebug() << "Context:" << contextName << "Finished:" << finishedMessages << "Total:" << totalMessages;
 
     double progress = totalMessages > 0 ? (double)finishedMessages / totalMessages : 0;
     if (progress < 0.3) {
